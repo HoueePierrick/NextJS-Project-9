@@ -1,4 +1,8 @@
-function handler(req, res) {
+import { MongoClient } from "mongodb";
+// La ligne suivante ne doit être utilisée qu'une seule fois et au tout début du projet. De préférence dans index.js
+require("dotenv").config("../../.env"); // Permet d'activer les variables d'environnement qui se trouvent dans le fichier `.env`
+
+async function handler(req, res) {
   if (req.method === "POST") {
     const userEmail = req.body.email;
 
@@ -8,7 +12,16 @@ function handler(req, res) {
       // Canceling the function execution
       return;
     }
-    console.log(userEmail);
+
+    const client = await MongoClient.connect(
+      `mongodb+srv://phouee:${process.env.MONGODB_PASSWORD}@clustertestph.lyjon.mongodb.net/${process.env.MONGODB_NAME}?retryWrites=true&w=majority`
+    );
+    // .then((client) => {
+    const db = client.db();
+    await db.collection("emails").insertOne({ email: userEmail });
+    // });
+    // console.log(userEmail);
+    client.close();
     // 201 means "success, a response was added"
     res.status(201).json({ message: "Signed up!" });
   }
